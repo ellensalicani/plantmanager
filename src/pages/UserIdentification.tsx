@@ -8,12 +8,14 @@ import {
     KeyboardAvoidingView,
     Keyboard,
     Platform,
-    TouchableWithoutFeedback
+    TouchableWithoutFeedback,
+    Alert
 } from 'react-native'
 import colors from '../styles/colors';
 import fonts from '../styles/fonts';
 import {Button} from '../components/Button'
 import { useNavigation } from '@react-navigation/core';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export function UserIdentification() {
     const [isFocused, setIsFocused] = useState(false)
@@ -35,8 +37,23 @@ export function UserIdentification() {
         setName(value)
     }
     
-    function handleSubmit(){
-        navigation.navigate('Confirmation')
+    async function handleSubmit(){
+        if(!name) return Alert.alert("Me diz como chamar você 😢") 
+
+        try{
+            //@plantmanager - padrao nome do app + nome do user do celular
+            //armazenando o nome do usuario no asyncstorage
+            await AsyncStorage.setItem('@plantmanager:user', name)
+            navigation.navigate('Confirmation', {
+                title: 'Prontinho',
+                subtitle: 'Agora vamos começar a cuidar das suas plantinhas com muito cuidado.',
+                buttonTitle: 'Começar',
+                icon: 'smile',
+                nextScreen: 'PlantSelect'
+            })
+        } catch{
+            Alert.alert("Não foi possíivel salvar o seu nome 😢") 
+        }
     }
 
     return(
@@ -46,7 +63,7 @@ export function UserIdentification() {
                     <View style={styles.content}>
                         <View style={styles.form}>
                             <View style={styles.header}>
-                                <Text style={styles.emoji}> { isFilled ? '😁' : '😃'} </Text>
+                                <Text style={styles.emoji}> { isFilled ? '😁' : '😃 '} </Text>
                                 <Text style={styles.title}>Como podemos {'\n'} chamar você?</Text>
                             </View>
                             <TextInput style={[
